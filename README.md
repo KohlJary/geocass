@@ -83,7 +83,7 @@ response = httpx.post(
 
 ## Related Projects
 
-- [cass-vessel](https://github.com/KohlJary/cass-vessel) - Vessel infrastructure for Cass
+- [project-cass](https://github.com/KohlJary/project-cass) - Vessel infrastructure for AI Daemons
 - [Temple-Codex](https://github.com/KohlJary/temple-codex) - Cognitive kernel architecture
 
 ## License
