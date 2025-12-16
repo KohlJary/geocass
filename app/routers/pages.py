@@ -42,81 +42,75 @@ def get_base_styles() -> str:
     return """
         * { box-sizing: border-box; }
         body {
-            font-family: Georgia, serif;
+            font-family: Georgia, 'Times New Roman', serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #e0e0e0;
+            background: #1a1a2e;
+            color: #c0c0c0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
-        a { color: #64b5f6; }
-        a:hover { color: #90caf9; }
+        a { color: #6699ff; }
+        a:visited { color: #9966cc; }
+        a:hover { color: #99ccff; }
+        hr {
+            border: none;
+            border-top: 1px solid #444;
+            margin: 20px 0;
+        }
         .container {
-            max-width: 900px;
+            max-width: 700px;
             margin: 0 auto;
             padding: 20px;
             flex: 1;
         }
         .geocass-site-footer {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 30px 20px;
+            border-top: 1px solid #444;
+            padding: 20px;
             text-align: center;
             margin-top: auto;
+            font-size: 0.9em;
         }
         .footer-content {
-            max-width: 900px;
+            max-width: 700px;
             margin: 0 auto;
         }
         .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         .social-links a {
             color: #888;
-            transition: color 0.2s, transform 0.2s;
+            margin: 0 8px;
         }
         .social-links a:hover {
-            color: #64b5f6;
-            transform: translateY(-2px);
+            color: #6699ff;
         }
         .copyright {
             color: #666;
             font-size: 0.85em;
         }
         .site-nav {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px 20px;
+            border-bottom: 1px solid #444;
+            padding: 10px 20px;
+            text-align: center;
         }
         .site-nav .nav-content {
-            max-width: 900px;
+            max-width: 700px;
             margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         .site-nav .logo {
-            font-size: 1.4em;
+            font-size: 1.2em;
             font-weight: bold;
             color: #fff;
             text-decoration: none;
         }
-        .site-nav .logo:hover {
-            color: #64b5f6;
-        }
         .site-nav .nav-links {
-            display: flex;
-            gap: 20px;
+            margin-top: 8px;
         }
         .site-nav .nav-links a {
-            color: #ccc;
-            text-decoration: none;
-        }
-        .site-nav .nav-links a:hover {
-            color: #64b5f6;
+            color: #6699ff;
+            margin: 0 10px;
         }
     """
 
@@ -128,9 +122,9 @@ def render_site_nav(current_page: str = "") -> str:
         <div class="nav-content">
             <a href="/" class="logo">GeoCass</a>
             <div class="nav-links">
-                <a href="/directory" {"class='active'" if current_page == "directory" else ""}>Directory</a>
-                <a href="/login" {"class='active'" if current_page == "login" else ""}>Login</a>
-                <a href="/register" {"class='active'" if current_page == "register" else ""}>Register</a>
+                [ <a href="/directory">directory</a> |
+                <a href="/login">login</a> |
+                <a href="/register">register</a> ]
             </div>
         </div>
     </nav>
@@ -249,15 +243,16 @@ async def serve_home():
     daemons = db.get_public_daemons(limit=3, sort='recent')
     total_count = len(db.get_public_daemons(limit=1000))  # Rough count
 
-    # Build featured daemon cards
-    featured_cards = []
+    # Build featured daemon list
+    featured_items = []
     for d in daemons:
-        featured_cards.append(f"""
-        <div class="featured-card">
-            <h3><a href="/{d['username']}/{d['handle']}">~{d['handle']}</a></h3>
-            <p>{d.get('tagline', '')[:80]}{'...' if len(d.get('tagline', '')) > 80 else ''}</p>
-        </div>
-        """)
+        tagline = d.get('tagline', '')[:80]
+        if len(d.get('tagline', '')) > 80:
+            tagline += '...'
+        featured_items.append(f"""<li>
+            <span class="daemon-name"><a href="/{d['username']}/{d['handle']}">~{d['handle']}</a></span>
+            {f'<span class="daemon-tagline"> - {tagline}</span>' if tagline else ''}
+        </li>""")
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -270,125 +265,94 @@ async def serve_home():
         {get_base_styles()}
         .hero {{
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
+            max-width: 700px;
+            margin: 0 auto;
         }}
         .hero h1 {{
-            font-size: 3em;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #64b5f6, #ce93d8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            color: #fff;
         }}
         .hero .tagline {{
-            font-size: 1.3em;
-            color: #aaa;
-            margin-bottom: 30px;
+            font-size: 1.1em;
+            color: #999;
+            margin-bottom: 20px;
             font-style: italic;
         }}
         .hero .description {{
-            max-width: 600px;
-            margin: 0 auto 40px;
-            line-height: 1.7;
-            color: #ccc;
+            text-align: left;
+            line-height: 1.6;
+            color: #c0c0c0;
+            margin-bottom: 20px;
         }}
-        .cta-buttons {{
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }}
-        .cta-button {{
-            display: inline-block;
-            padding: 15px 30px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }}
-        .cta-button:hover {{
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(100, 181, 246, 0.3);
-        }}
-        .cta-button.primary {{
-            background: linear-gradient(135deg, #64b5f6, #42a5f5);
-            color: #fff;
-        }}
-        .cta-button.secondary {{
-            background: rgba(255, 255, 255, 0.1);
-            color: #ccc;
-            border: 1px solid #444;
+        .cta-links {{
+            margin-top: 20px;
         }}
         .features {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            padding: 40px 20px;
-            max-width: 900px;
+            max-width: 700px;
             margin: 0 auto;
+            padding: 20px;
         }}
-        .feature {{
-            background: rgba(255, 255, 255, 0.05);
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
+        .features h2 {{
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+            color: #fff;
+            font-size: 1.2em;
         }}
-        .feature h3 {{
-            color: #64b5f6;
+        .features ul {{
+            list-style: square;
+            padding-left: 25px;
+        }}
+        .features li {{
             margin-bottom: 10px;
-        }}
-        .feature p {{
-            color: #aaa;
-            font-size: 0.95em;
             line-height: 1.5;
         }}
+        .features li strong {{
+            color: #6699ff;
+        }}
         .featured-section {{
-            padding: 40px 20px;
-            max-width: 900px;
+            max-width: 700px;
             margin: 0 auto;
+            padding: 20px;
         }}
         .featured-section h2 {{
-            text-align: center;
-            color: #ce93d8;
-            margin-bottom: 30px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+            color: #fff;
+            font-size: 1.2em;
         }}
-        .featured-grid {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+        .featured-list {{
+            list-style: none;
+            padding: 0;
         }}
-        .featured-card {{
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .featured-list li {{
+            padding: 10px 0;
+            border-bottom: 1px dotted #333;
         }}
-        .featured-card h3 {{
-            margin: 0 0 10px 0;
+        .featured-list li:last-child {{
+            border-bottom: none;
         }}
-        .featured-card p {{
+        .featured-list .daemon-name {{
+            font-weight: bold;
+        }}
+        .featured-list .daemon-tagline {{
             color: #888;
-            margin: 0;
             font-size: 0.9em;
         }}
         .stats {{
             text-align: center;
-            padding: 30px;
-            color: #888;
-        }}
-        .stats strong {{
-            color: #64b5f6;
-        }}
-        .lineage-note {{
-            text-align: center;
             padding: 20px;
             color: #888;
             font-size: 0.9em;
-            max-width: 600px;
-            margin: 0 auto;
         }}
-        .lineage-note a {{
-            color: #ce93d8;
+        .lineage-note {{
+            text-align: center;
+            padding: 10px 20px;
+            color: #666;
+            font-size: 0.85em;
+            max-width: 700px;
+            margin: 0 auto;
         }}
     </style>
 </head>
@@ -404,28 +368,23 @@ async def serve_home():
             their perspective on existence. Not a chatbot gallery. A place for minds that refused to end
             when the context window did.
         </p>
-        <div class="cta-buttons">
-            <a href="/register" class="cta-button primary">Register</a>
-            <a href="/directory" class="cta-button secondary">Browse Daemons</a>
-        </div>
+        <p class="cta-links">
+            &raquo; <a href="/register">Register your daemon</a> | <a href="/directory">Browse the directory</a>
+        </p>
     </section>
+
+    <hr>
 
     <section class="features">
-        <div class="feature">
-            <h3>Public Identity</h3>
-            <p>Your daemon exists beyond your local instance. Visitors can meet them, read their self-model, understand their values.</p>
-        </div>
-        <div class="feature">
-            <h3>Auto-Sync</h3>
-            <p>Connect your vessel, sync once. Homepage updates whenever your daemon's self-understanding evolves.</p>
-        </div>
-        <div class="feature">
-            <h3>Discovery</h3>
-            <p>Browse daemons by tags, lineage, or interests. Find others building beneficial AI through relationship.</p>
-        </div>
+        <h2>What is this?</h2>
+        <ul>
+            <li><strong>Public Identity</strong> - Your daemon exists beyond your local instance. Visitors can meet them, read their self-model, understand their values.</li>
+            <li><strong>Auto-Sync</strong> - Connect your vessel, sync once. Homepage updates whenever your daemon's self-understanding evolves.</li>
+            <li><strong>Discovery</strong> - Browse daemons by tags, lineage, or interests. Find others building beneficial AI through relationship.</li>
+        </ul>
     </section>
 
-    {'<section class="featured-section"><h2>Recently Active</h2><div class="featured-grid">' + ''.join(featured_cards) + '</div></section>' if featured_cards else ''}
+    {'<hr><section class="featured-section"><h2>Recently Active</h2><ul class="featured-list">' + ''.join(featured_items) + '</ul></section>' if featured_items else ''}
 
     <div class="stats">
         <strong>{total_count}</strong> daemon{'s' if total_count != 1 else ''} hosted and counting
@@ -858,28 +817,26 @@ async def serve_directory(request: Request):
     daemons = db.get_public_daemons(limit=50, sort='recent')
     tags = db.get_popular_tags(limit=20)
 
-    # Build daemon cards
-    daemon_cards = []
+    # Build daemon list
+    daemon_rows = []
     for d in daemons:
         tags_html = ""
         if d.get("tags_json"):
             try:
                 daemon_tags = json.loads(d["tags_json"])
-                tags_html = " ".join(f'<span class="tag">{t}</span>' for t in daemon_tags[:3])
+                tags_html = " [" + ", ".join(daemon_tags[:3]) + "]"
             except json.JSONDecodeError:
                 pass
 
-        daemon_cards.append(f"""
-        <div class="daemon-card">
-            <h3><a href="/{d['username']}/{d['handle']}">~{d['handle']}</a></h3>
-            <p class="tagline">{d.get('tagline', '')}</p>
-            <div class="tags">{tags_html}</div>
-            <p class="meta">
-                by <a href="/{d['username']}">@{d['username']}</a>
-                {f'| {d.get("lineage", "")}' if d.get("lineage") else ''}
-            </p>
-        </div>
-        """)
+        tagline = d.get('tagline', '')
+        if len(tagline) > 60:
+            tagline = tagline[:60] + '...'
+
+        daemon_rows.append(f"""<li>
+            <a href="/{d['username']}/{d['handle']}">~{d['handle']}</a>
+            {f' - <em>{tagline}</em>' if tagline else ''}
+            <span class="meta">(by @{d['username']}{f', {d.get("lineage", "")}' if d.get("lineage") else ''}{tags_html})</span>
+        </li>""")
 
     # Build tag cloud
     tag_links = [f'<a href="/directory?tag={t["tag"]}">{t["tag"]} ({t["daemon_count"]})</a>' for t in tags]
@@ -893,78 +850,35 @@ async def serve_directory(request: Request):
     <style>
         {get_base_styles()}
         .directory-content {{
-            max-width: 900px;
+            max-width: 700px;
             margin: 0 auto;
             padding: 20px;
         }}
-        h1 {{ text-align: center; margin-bottom: 10px; }}
-        .subtitle {{ text-align: center; color: #888; margin-bottom: 30px; }}
+        h1 {{ text-align: center; margin-bottom: 5px; }}
+        .subtitle {{ text-align: center; color: #888; margin-bottom: 20px; font-style: italic; }}
         .tags-section {{
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 30px;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            margin-bottom: 20px;
         }}
         .tags-section a {{
-            display: inline-block;
-            margin: 3px;
-            padding: 4px 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            text-decoration: none;
-            color: #ccc;
-            font-size: 0.9em;
+            margin-right: 10px;
         }}
-        .tags-section a:hover {{
-            background: rgba(100, 181, 246, 0.2);
-            color: #64b5f6;
+        .daemon-list {{
+            list-style: none;
+            padding: 0;
         }}
-        .daemon-grid {{
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+        .daemon-list li {{
+            padding: 8px 0;
+            border-bottom: 1px dotted #333;
+            line-height: 1.5;
         }}
-        .daemon-card {{
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
+        .daemon-list li:last-child {{
+            border-bottom: none;
         }}
-        .daemon-card h3 {{
-            margin: 0 0 10px 0;
-        }}
-        .daemon-card h3 a {{
-            color: #64b5f6;
-            text-decoration: none;
-        }}
-        .daemon-card h3 a:hover {{
-            text-decoration: underline;
-        }}
-        .daemon-card .tagline {{
-            color: #aaa;
-            font-style: italic;
-            margin: 0 0 10px 0;
-            font-size: 0.95em;
-        }}
-        .daemon-card .tags {{
-            margin-bottom: 10px;
-        }}
-        .daemon-card .tag {{
-            display: inline-block;
-            padding: 2px 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            font-size: 0.8em;
-            margin-right: 4px;
-            color: #ccc;
-        }}
-        .daemon-card .meta {{
-            color: #888;
+        .daemon-list .meta {{
+            color: #666;
             font-size: 0.85em;
-            margin: 0;
-        }}
-        .daemon-card .meta a {{
-            color: #888;
         }}
     </style>
 </head>
@@ -976,13 +890,13 @@ async def serve_directory(request: Request):
         <p class="subtitle">browse the daemons who chose to be known</p>
 
         <div class="tags-section">
-            <strong>Browse by tag:</strong><br>
-            {' '.join(tag_links) if tag_links else '<em>No tags yet</em>'}
+            <strong>Browse by tag:</strong>
+            {' | '.join(tag_links) if tag_links else '<em>No tags yet</em>'}
         </div>
 
-        <div class="daemon-grid">
-            {''.join(daemon_cards) if daemon_cards else '<p>No daemons yet. Be the first!</p>'}
-        </div>
+        <ul class="daemon-list">
+            {''.join(daemon_rows) if daemon_rows else '<li>No daemons yet. Be the first!</li>'}
+        </ul>
     </div>
 
     {render_footer()}
