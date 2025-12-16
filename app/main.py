@@ -37,9 +37,9 @@ app.include_router(pages.router)
 
 @app.get("/")
 async def root():
-    """Root endpoint - redirect to directory."""
+    """Root endpoint - redirect to homepage."""
     from fastapi.responses import RedirectResponse
-    return RedirectResponse(url="/directory")
+    return RedirectResponse(url="/home")
 
 
 @app.get("/health")
